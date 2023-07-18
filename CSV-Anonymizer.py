@@ -23,7 +23,6 @@ class PeopleTable: #this is a singleton, so that every instance of CSV "knows" t
         self.fake_NameSet = set()
         self.fake_EmailSet = set()
         self.fake_AddressSet = set()
-        pass
     def newPerson(object):
         pass
 
@@ -60,13 +59,13 @@ class CSV:
         self.Data = tuple([item for item in data])
     def rowParse(self,row_list):
         newPerson = Person()
-        newPerson.matchIndices(row_list)
+        newPerson.matchTypes(row_list)
     #for each row, run row through data detection; if data detection valid for item, set index
 
 class Person: #ISSUE: How will we get multiple instances of a type included? Advisor names for example. 
               #ANSWER: initiate new instance whenever we find it. 
               #ISSUE: How will we know which instance belongs with which when a type repeats?
-    class _emplID: #these may not be necessary at all; they may allow for more complex regex-checking and such
+    class _emplID: #these may not be necessary at all; they may allow for more complex regex-checking and such later
         pass
     class _name:
         pass
@@ -88,20 +87,24 @@ class Person: #ISSUE: How will we get multiple instances of a type included? Adv
         self.isEmail = lambda x: '@' in x
         self.isAddress = lambda x: '' #not sure about how to test this one yet
     def __hash__(self) -> int:
-        hash(f'{self.emplID}{self.name}')
+        return hash(f'{self.emplID}{self.name}')
     def __eq__(self, __value: object) -> bool:
         pass
-    def matchIndices(self, list_of_values: list): #this is not the best way to do this, just experimenting right now
+    def matchTypes(self, list_of_values: list): #this is not the best way to do this, just experimenting right now
         indexes = {}
         def matchMove(category, index, cell): 
-            if category in indexes and category != indexes[category]: PeopleTable().newPerson(Person()) #this means we have an extra name or duplicate present 
+            if category in indexes and category != indexes[category]: 
+                newPerson = Person()
+                newPerson.name = cell
+                PeopleTable().newPerson(newPerson) #this means we have an extra name or duplicate present 
             else: indexes.__setitem__(category,index)
         for num, cell in enumerate(list_of_values):
             if self.isEmplID(cell): matchMove("emplID",num,cell) #test here: if we already found a name, generate new Person class in PeopleTable using recursion
             if self.isName(cell): matchMove("name",num,cell)
             if self.isEmail(cell): matchMove("email",num,cell)
             if self.isAddress(cell): matchMove("address",num,cell)
-        return indexes
+        for category,index in indexes:
+            self.__dict__[category]=list_of_values[index]
     def genName(self):
         pass
     def genEmail(self):
