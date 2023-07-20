@@ -95,20 +95,14 @@ class Person: #ISSUE: How will we get multiple instances of a type included? Adv
         return hash(f'{self.emplID}{self.name}')
     def __eq__(self, __value: object) -> bool:
         pass
-    def matchTypes(self, list_of_values: list): #this is not the best way to do this, just experimenting right now; see __dict__ statement
-        indexes = {}
+    def matchTypes(self, list_of_values: list): #here's how this SHOULD work: match and note indexes. Generate all fakes. Then return at the end. 
         newList = list_of_values
         print('Matching types...\n')
         def matchMove(category, index, cell): 
             print(f'Category: {category}, Cell: {cell}, Index: {index}')
-            if category in indexes and category != indexes[category]: 
-                newPerson = Person()
-                newPerson.name = cell
-                print(f'Second item detected that fits category. ')
-                PeopleTable().newPerson(newPerson) #this means we have an extra name or duplicate present 
-            else:
-                self.__dict__[category]=[cell]
-                newList[index] = cell
+            self.__dict__[category]=[cell]
+            if category == "name": self.genName()
+            newList[index] = self.fake_name
         for num, cell in enumerate(list_of_values):
             if isEmplID(cell): matchMove("emplID",num,cell) #test here: if we already found a name, generate new Person class in PeopleTable using recursion
             if isName(cell): matchMove("name",num,cell)
@@ -122,7 +116,7 @@ class Person: #ISSUE: How will we get multiple instances of a type included? Adv
         #(rand_select(tup) for tup,prob in ((name_prefixes,25),(first_names,100),(middle_names,50),(last_names,100),(name_suffixes,25)) if random.randrange(0,100) <= prob)
     def genEmail(self):
         try:
-            self.fake_email = self.fake_name
+            self.fake_email = f'{self.fake_name}@email.com'
         except:
             self.genName()
             self.genEmail()
